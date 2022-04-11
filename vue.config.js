@@ -1,6 +1,6 @@
 module.exports = {
   devServer: {
-    port: 5001,
+    port: 4001,
     proxy: 'http://localhost:4001',
   },
   transpileDependencies: [

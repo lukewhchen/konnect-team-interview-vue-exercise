@@ -1,18 +1,13 @@
 <template>
   <div>
-    <div class="search-bar">
-      <img src="@/assets/icon-search.svg" alt="konnect icon">
-      <input
-        v-model="searchTerm"
-        placeholder="Search"
-      >
-    </div>
+    <SearchBar
+      @handleSearch="handleSearch"
+    ></SearchBar>
     <div class="catalog">
       <KCard
-        v-for="service in services"
+        v-for="service in showServices"
         :key="service.id"
         class="service-card"
-        :hasHover="true"
       >
         <template slot="title">
           {{ service.name }}
@@ -26,6 +21,14 @@
         </template>
       </KCard>
     </div>
+    <PaginationBar
+      :page="currentPage"
+      :itemPerPage="itemPerPage"
+      :maxPage="maxPage"
+      :totalItem="totalServicesCount"
+      @handleClick="handlePaginate"
+    >
+    </PaginationBar>
   </div>
 </template>
 
@@ -33,26 +36,48 @@
 import Vue from 'vue'
 import KCard from '@kongponents/kcard'
 import axios from 'axios'
+import SearchBar from '@/components/utils/SearchBar.vue'
+import PaginationBar from '@/components/PaginationBar.vue'
+
 export default Vue.extend({
   name: 'Catalog',
   components: {
-    KCard
+    KCard,
+    SearchBar,
+    PaginationBar
   },
   data () {
     return {
       services: [],
-      filteredServices: [],
-      searchTerm: ''
+      searchResult: [],
+      hasSearchResult: false,
+      currentPage: 1,
+      itemPerPage: 12,
     }
   },
-  watch: {
-    searchTerm (val) {
-      console.log(val)
-    }
+  computed: {
+    totalServicesCount(){
+      if (this.hasSearchResult) return Math.max(this.searchResult.length-1, 0);
+      return this.services && Math.max(this.services.length-1, 0); // avoid -1 case
+    },
+    maxPage(){
+      let remainderPage = this.totalServicesCount%this.itemPerPage ? 1 : 0;
+      return Math.floor(this.totalServicesCount/this.itemPerPage) + remainderPage
+    },
+    servicesArray(){
+      if (this.hasSearchResult) return this.searchResult;
+      return this.services
+    },
+    showServices(){
+      if (!this.servicesArray) return [];
+      let start = (this.currentPage-1)*this.itemPerPage;
+      let end = Math.min((this.currentPage*this.itemPerPage)-1, this.totalServicesCount);
+      return this.servicesArray.slice(start, end+1);
+    },
   },
   mounted () {
     // this.fetchServices();
-    this.fetchFakeServices();
+    this.fetchMockServices();
   },
   methods: {
     fetchServices () {
@@ -61,7 +86,7 @@ export default Vue.extend({
         this.services = res.data
       })
     },
-    fetchFakeServices(){
+    fetchMockServices(){
       const faker = require('faker')
       let data = { service_packages: [] }
 
@@ -81,8 +106,28 @@ export default Vue.extend({
           })()
         })
       }
-      console.log({data})
+      // console.log({data})
       this.services = data && data.service_packages
+    },
+    handlePaginate(action){
+      if (action === 'back') this.currentPage = Math.max(1, this.currentPage-1);
+      if (action === 'forward') this.currentPage = Math.min(this.maxPage, this.currentPage+1);
+    },
+    handleSearch(val){
+      this.hasSearchResult = false;
+      let res = this.services.filter(el => {
+        const {name, description} = el;
+        return this.checkMatch(name, val) || this.checkMatch(description, val)
+      })
+      this.searchResult = res;
+      this.hasSearchResult = true;
+      this.currentPage = 1;
+    },
+    checkMatch(str, target){
+      if (!str) return false;
+      if (!target) return true;
+      return str.toLowerCase().indexOf(target.toLowerCase()) !== -1;
+      // NOTE make search case-insensitive
     }
   }
 })
@@ -90,36 +135,24 @@ export default Vue.extend({
 
 <style lang="scss">
 $medium-weight: 600;
+$blue-300: #A6C6FF;
 
-.search-bar {
-  position: relative;
-  display: flex;
-  justify-content: flex-start;
-  img {
-    position: absolute;
-    left: 12px;
-    top: 12px;
-  }
-  input {
-    font-size: 16px;
-    padding-left: 38px;
-    height: 38px;
-    width: 241px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    box-sizing: border-box;
-    border-radius: 3px;
-  }
-}
-
+// NOTE make sure the last row align properly
 .catalog {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 214px);
+  justify-content: space-between;
 }
 
 .service-card {
-  width: 214.68px;
-  height: 181px;
-  margin: 10px; // TODO check ratio
+  width: 181px;
+  height: 147px;
+  margin-bottom: 32px;
+}
+
+.service-card:hover {
+  cursor: pointer;
+  border: 1px solid $blue-300 !important;
 }
 
 .k-card-title {
@@ -141,17 +174,13 @@ $medium-weight: 600;
 .k-card-body {
   position: relative;
   text-align: left;
-  height: 140px; //NOTE check card ratio
-  // background-color: pink;
+  height: 106px;
   p {
     font-weight: 400;
     font-size: 14px;
     line-height: 16.41px;
     color: rgba(0, 0, 0, 0.45);
   }
-  // p::first-letter {
-  //   text-transform: uppercase; // NOTE make sure the first letter of info always uppercase
-  // }
 }
 
 .text-clamp {
@@ -164,10 +193,9 @@ $medium-weight: 600;
 .card-versions {
   position: absolute;
   bottom: 0px;
-  // border: 1px solid;
   display: flex;
   font-size: 14px;
-  line-height: 16.41px; // TODO use variable
+  line-height: 16.41px;
   font-weight: $medium-weight;
   span {
     color: rgba(0, 0, 0, 0.7);

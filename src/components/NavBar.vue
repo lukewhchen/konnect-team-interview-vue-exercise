@@ -1,7 +1,11 @@
 <template>
-  <div class="navbar-container">
-    <h1>Services</h1>
-    <button>Add New Service</button>
+  <div id="nav">
+    <img src="@/assets/logo-konnect.svg" alt="konnect icon" width="100.65px">
+    <div class="nav-actions">
+      <img src="@/assets/icon-notification.svg" alt="notification icon" width="20px">
+      <img src="@/assets/icon-help.svg" alt="help icon" width="20px">
+      <img src="@/assets/icon-user.svg" alt="user icon" width="32px">
+    </div>
   </div>
 </template>
 
@@ -21,27 +25,23 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
-.navbar-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  h1 {
-    font-weight: 600;
-    font-size: 24px;
-    line-height: 28px;
-    color: #0A2B66;
+  #nav {
+    height: 60px;
+    border-bottom: 1px solid #E5E5E5;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 24px;
+    img:hover {
+      cursor: pointer;
+    }
   }
-}
-button {
-  font-weight: 400;
-  font-size: 16px;
-  line-height: 19px;
-  border: none;
-  align-items: center;
-  color: #FFFFFF;
-  width: 145px;
-  height: 35px;
-  background: #1456CB;
-  border-radius: 3px;
-}
+
+  .nav-actions {
+    display: flex;
+    justify-content: flex-end;
+    img {
+      margin: 0 10px;
+    }
+
+  }
 </style>
