@@ -2,7 +2,7 @@
   <div id="app">
     <div id="nav">
       <router-link to="/">
-        Home
+        <img src="@/assets/logo-konnect.svg" alt="konnect icon">
       </router-link>
     </div>
     <router-view />
@@ -11,7 +11,9 @@
 
 <style lang="scss">
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  // font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Roboto', sans-serif;
+  font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
@@ -20,7 +22,7 @@
 
 #nav {
   padding: 30px;
-
+  display: flex;
   a {
     font-weight: bold;
     color: #2c3e50;
